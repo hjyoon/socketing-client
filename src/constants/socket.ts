@@ -1,9 +1,8 @@
-const withTrailingSlash = (url: string) =>
-  url.endsWith("/") ? url : `${url}/`;
+import { requireEnv, withTrailingSlash } from "./env";
 
 export const SOCKET_SERVER_URL = withTrailingSlash(
-  import.meta.env.VITE_SOCKET_SERVER_URL || "https://socket.hjyoon.me/"
+  requireEnv("VITE_SOCKET_SERVER_URL")
 );
 export const QUEUE_SERVER_URL = withTrailingSlash(
-  import.meta.env.VITE_QUEUE_SERVER_URL || "https://queue.hjyoon.me/"
+  requireEnv("VITE_QUEUE_SERVER_URL")
 );

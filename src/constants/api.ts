@@ -1,6 +1,3 @@
-const withTrailingSlash = (url: string) =>
-  url.endsWith("/") ? url : `${url}/`;
+import { requireEnv, withTrailingSlash } from "./env";
 
-export const baseURL = withTrailingSlash(
-  import.meta.env.VITE_API_BASE_URL || "https://socketing.hjyoon.me/api/"
-);
+export const baseURL = withTrailingSlash(requireEnv("VITE_API_BASE_URL"));

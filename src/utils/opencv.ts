@@ -1,4 +1,5 @@
 import { Point, Contour, BoundingBox } from "../types/components/common";
+import { requireEnv } from "../constants/env";
 
 // OpenCV 내부에서 사용할 타입 정의
 interface OpenCVSize {
@@ -104,7 +105,7 @@ export const loadOpenCV = async (): Promise<void> => {
     window.cvScriptLoaded = true;
     console.log("loading opencv");
     const script = document.createElement("script");
-    script.src = "https://docs.opencv.org/4.8.0/opencv.js";
+    script.src = requireEnv("VITE_OPENCV_SCRIPT_URL");
     script.async = true;
     script.type = "text/javascript";
 
