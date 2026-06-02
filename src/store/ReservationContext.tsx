@@ -1,5 +1,4 @@
 import React, { createContext, useState, useEffect, useContext } from "react";
-import { Socket } from "socket.io-client";
 import { useSocketConnection } from "../hooks/useSocketConnection";
 import {
   AreaSocket,
@@ -7,13 +6,14 @@ import {
   Seat,
   SeatsSelectedResponse,
   OrderResponseData,
+  SocketType,
 } from "../types/api/socket";
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router";
 import { UserContext } from "./UserContext";
 
 interface ReservationContextType {
-  socket: Socket | null;
+  socket: SocketType | null;
   isConnected: boolean;
   eventId: string | null;
   setEventId: (id: string) => void;
@@ -179,44 +179,55 @@ export const ReservationProvider: React.FC<{ children: React.ReactNode }> = ({
       void navigate(`/waiting/${pathParts[2]}/${pathParts[3]}`);
     }
 
-    socket.on("connect", () => {
-      if (socket.id) setCurrentUserId(socket.id);
-    });
+    if (socket.id) setCurrentUserId(socket.id);
 
-    socket.on("roomJoined", (data: { areas: AreaSocket[] }) => {
+    const handleConnect = () => {
+      if (socket.id) setCurrentUserId(socket.id);
+    };
+
+    const handleRoomJoined = (data: { areas: AreaSocket[] }) => {
       const newAreasMap = new Map();
       data.areas.forEach((area) => newAreasMap.set(area.id, area));
       setAreasMap(newAreasMap);
-    });
+    };
 
-    socket.on("areaJoined", (data: { seats: Seat[] }) => {
+    const handleAreaJoined = (data: { seats: Seat[] }) => {
       const newSeatsMap = new Map();
       data.seats.forEach((seat) => newSeatsMap.set(seat.id, seat));
       setSeatsMap(newSeatsMap);
-    });
+    };
 
-    socket.on("seatsSelected", (data: SeatsSelectedResponse[]) => {
+    const handleSeatsSelected = (data: SeatsSelectedResponse[]) => {
       updateSeats(data);
-    });
+    };
 
-    socket.on(
-      "reservedSeatsStatistic",
-      (data: ReservedSeatsStatisticResponse[]) => {
-        setAreaStats(data);
-      }
-    );
+    const handleReservedSeatsStatistic = (
+      data: ReservedSeatsStatisticResponse[]
+    ) => {
+      setAreaStats(data);
+    };
 
-    socket.on("error", (data) => {
+    const handleError = (data: { message?: string }) => {
       console.error("Error received from server:", data.message);
       toast.error(data.message); //("요청하신 티켓 수 만큼의 좌석이 없습니다.");
-    });
+    };
+
+    socket.on("connect", handleConnect);
+    socket.on("roomJoined", handleRoomJoined);
+    socket.on("areaJoined", handleAreaJoined);
+    socket.on("seatsSelected", handleSeatsSelected);
+    socket.on("reservedSeatsStatistic", handleReservedSeatsStatistic);
+    socket.on("error", handleError);
 
     return () => {
-      socket.off("connect");
-      socket.off("roomJoined");
-      socket.off("seatsSelected");
+      socket.off("connect", handleConnect);
+      socket.off("roomJoined", handleRoomJoined);
+      socket.off("areaJoined", handleAreaJoined);
+      socket.off("seatsSelected", handleSeatsSelected);
+      socket.off("reservedSeatsStatistic", handleReservedSeatsStatistic);
+      socket.off("error", handleError);
     };
-  }, [socket, tokenError]);
+  }, [navigate, socket, tokenError]);
 
   useEffect(() => {
     if (socket && eventId && eventDateId) {

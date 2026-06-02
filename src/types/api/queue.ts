@@ -1,4 +1,4 @@
-import { Socket } from "socket.io-client";
+import { EventWebSocket } from "../../utils/EventWebSocket";
 
 export interface TokenResponse {
   token: string;
@@ -32,4 +32,4 @@ export interface ClientToServerEvents {
   joinQueue: (params: JoinQueueData) => void;
 }
 
-export type QueueType = Socket<ServerToClientEvents, ClientToServerEvents>;
+export type QueueType = EventWebSocket;

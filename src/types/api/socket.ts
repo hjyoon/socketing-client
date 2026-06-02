@@ -1,5 +1,5 @@
-import { Socket } from "socket.io-client";
 import { PaymentMethod, UpdatedPaymentResponse } from "./payment";
+import { EventWebSocket } from "../../utils/EventWebSocket";
 
 // Base Types
 export interface Seat {
@@ -121,7 +121,7 @@ export interface ClientToServerEvents {
 }
 
 // Main Socket Type
-export type SocketType = Socket<ServerToClientEvents, ClientToServerEvents>;
+export type SocketType = EventWebSocket;
 
 // Helper Types
 export type SeatStatus =

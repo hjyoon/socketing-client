@@ -1,36 +1,27 @@
-import { useEffect, useRef, useState } from "react";
-import { io, Socket } from "socket.io-client";
+import { useEffect, useState } from "react";
 import { SOCKET_SERVER_URL } from "../constants/socket";
-import {
-  ServerToClientEvents,
-  ClientToServerEvents,
-} from "../types/api/socket";
+import { SocketType } from "../types/api/socket";
+import { createWebSocketUrl, EventWebSocket } from "../utils/EventWebSocket";
 
 export const useSocketConnection = () => {
+  const [socket, setSocket] = useState<SocketType | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [tokenError, setTokenError] = useState<string | null>(null);
 
-  const socketRef = useRef<Socket<
-    ServerToClientEvents,
-    ClientToServerEvents
-  > | null>(null);
-
   useEffect(() => {
     const token = localStorage.getItem("entranceToken");
-    socketRef.current = io(SOCKET_SERVER_URL, {
-      transports: ["websocket"],
-      auth: {
-        token,
-      },
-    });
+    const nextSocket = new EventWebSocket(
+      createWebSocketUrl(SOCKET_SERVER_URL, token)
+    );
+    setSocket(nextSocket);
 
-    socketRef.current.on("connect", () => {
+    nextSocket.on("connect", () => {
       console.log("Socket connected!");
       setIsConnected(true);
       setTokenError(null);
     });
 
-    socketRef.current.on("connect_error", (err) => {
+    nextSocket.on<{ message?: string }>("connect_error", (err) => {
       console.error("Connection error:", err.message);
 
       if (err.message === "Authentication error 2") {
@@ -38,15 +29,16 @@ export const useSocketConnection = () => {
       }
     });
 
-    socketRef.current.on("disconnect", () => {
+    nextSocket.on("disconnect", () => {
       console.log("Socket disconnected!");
       setIsConnected(false);
     });
 
     return () => {
-      socketRef.current?.disconnect();
+      nextSocket.disconnect();
+      setSocket(null);
     };
   }, []);
 
-  return { socket: socketRef.current, isConnected, tokenError };
+  return { socket, isConnected, tokenError };
 };
