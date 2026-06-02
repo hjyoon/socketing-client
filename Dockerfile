@@ -10,7 +10,6 @@ COPY tsconfig*.json ./
 COPY tailwind.config.js postcss.config.js ./
 COPY public ./public
 COPY src ./src
-COPY .storybook ./.storybook
 
 ARG VITE_API_BASE_URL=https://socketing.hjyoon.me/api/
 ARG VITE_SOCKET_SERVER_URL=https://socket.hjyoon.me/
