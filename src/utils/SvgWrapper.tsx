@@ -1,8 +1,9 @@
-import { forwardRef, useContext, useState } from "react";
+import { forwardRef, useContext, useRef, useState } from "react";
 import { AreaSocket, Seat } from "../types/api/socket";
 import { ReservationContext } from "../store/ReservationContext";
 import { useParsedSvgContent } from "./svg-wrapper/useParsedSvgContent";
 import { useAreaStatsFill } from "./svg-wrapper/useAreaStatsFill";
+import { findAreaIdFromTarget } from "./svg-wrapper/areaElement";
 
 interface SvgWrapperProps {
   svgString: string;
@@ -17,19 +18,30 @@ const SvgWrapper = forwardRef<SVGSVGElement, SvgWrapperProps>(
     const context = useContext(ReservationContext);
     const svgContent = useParsedSvgContent(svgString);
     const [hoveredAreaId, setHoveredAreaId] = useState<string | null>(null);
+    const pointerStart = useRef<{ x: number; y: number } | null>(null);
     useAreaStatsFill(context.areaStats);
 
     const handleAreaClick = (area: AreaSocket) => {
       if (context.currentAreaId === area.id) return;
-      const areaElement = document.querySelector(
-        `.areas [class='${area.id}'] .area-data`
-      );
-      if (areaElement instanceof SVGPathElement) onAreaClick?.(area.id);
+      onAreaClick?.(area.id);
       context.setSeatsMap(new Map());
       if (context.currentAreaId !== null)
         context.exitArea(context.currentAreaId);
       context.joinArea(area.id);
       context.setCurrentAreaId(area.id);
+    };
+
+    const handlePointerUp = (event: React.PointerEvent<SVGSVGElement>) => {
+      const start = pointerStart.current;
+      pointerStart.current = null;
+      if (
+        start &&
+        Math.hypot(event.clientX - start.x, event.clientY - start.y) > 5
+      )
+        return;
+      const areaId = findAreaIdFromTarget(event.target, event.currentTarget);
+      const area = areas.find((item) => item.id === areaId);
+      if (area) handleAreaClick(area);
     };
 
     if (!svgContent.viewBox) return null;
@@ -41,6 +53,10 @@ const SvgWrapper = forwardRef<SVGSVGElement, SvgWrapperProps>(
         height="100%"
         viewBox={svgContent.viewBox}
         className="w-full h-full"
+        onPointerDown={(event) => {
+          pointerStart.current = { x: event.clientX, y: event.clientY };
+        }}
+        onPointerUp={handlePointerUp}
       >
         <g dangerouslySetInnerHTML={{ __html: svgContent.content }} />
         <g className="areas">
@@ -48,8 +64,8 @@ const SvgWrapper = forwardRef<SVGSVGElement, SvgWrapperProps>(
             <g
               key={area.id}
               className={area.id}
+              data-area-id={area.id}
               dangerouslySetInnerHTML={{ __html: area.svg }}
-              onClick={() => handleAreaClick(area)}
               onMouseEnter={() =>
                 context.currentAreaId !== area.id && setHoveredAreaId(area.id)
               }

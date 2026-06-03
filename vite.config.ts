@@ -18,6 +18,7 @@ export default defineConfig({
       reporter: ["text"],
       include: [
         "src/store/reservationSeatUpdates.ts",
+        "src/utils/svg-wrapper/areaElement.ts",
         "src/utils/svgGeometry.ts",
       ],
       thresholds: {
