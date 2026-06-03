@@ -1,9 +1,9 @@
-FROM node:20-alpine AS build
+FROM oven/bun:1.3-alpine AS deps
 
 WORKDIR /app
 
-COPY package*.json ./
-RUN npm ci --ignore-scripts
+COPY package.json ./
+RUN bun install --ignore-scripts
 
 COPY index.html vite.config.ts vite-env.d.ts ./
 COPY tsconfig*.json ./
@@ -23,13 +23,19 @@ ENV VITE_QUEUE_SERVER_URL=$VITE_QUEUE_SERVER_URL
 ENV VITE_OPENCV_SCRIPT_URL=$VITE_OPENCV_SCRIPT_URL
 ENV VITE_FONT_STYLESHEET_URL=$VITE_FONT_STYLESHEET_URL
 
+FROM deps AS test
+
+RUN bun run test
+
+FROM deps AS build
+
 RUN test -n "$VITE_API_BASE_URL" \
   && test -n "$VITE_SOCKET_SERVER_URL" \
   && test -n "$VITE_QUEUE_SERVER_URL" \
   && test -n "$VITE_OPENCV_SCRIPT_URL" \
   && test -n "$VITE_FONT_STYLESHEET_URL"
 
-RUN npm run build
+RUN bun run build
 
 FROM nginx:1.28-alpine
 
