@@ -1,5 +1,6 @@
 import React, { useEffect, useRef, useState } from "react";
 import { Point } from "../types/components/common";
+import { clampScale, pointerInRect, zoomTranslate } from "./panZoomMath";
 
 interface Options {
   mouseDeltaByScale?: boolean;
@@ -38,7 +39,16 @@ export const usePanZoom = ({
     };
     const wheel = (event: WheelEvent) => {
       event.preventDefault();
-      setScale((prev) => clampScale(prev + event.deltaY * -0.001));
+      const rect = containerRef.current?.getBoundingClientRect();
+      if (!rect) return;
+      const point = pointerInRect(event, rect);
+      setScale((prev) => {
+        const next = clampScale(prev + event.deltaY * -0.001);
+        setTranslate((current) =>
+          zoomTranslate(current, point, prev, next, mouseDeltaByScale)
+        );
+        return next;
+      });
     };
 
     document.addEventListener("mousemove", move);
@@ -111,8 +121,6 @@ export const usePanZoom = ({
     translate,
   };
 };
-
-const clampScale = (scale: number) => Math.min(Math.max(0.5, scale), 3);
 
 const getTouchDistance = (a: React.Touch, b: React.Touch): number =>
   Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
