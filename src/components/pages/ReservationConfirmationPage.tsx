@@ -6,8 +6,8 @@ import ErrorPage from "./ErrorPage";
 
 const ReservationConfirmationPage = () => {
   const location = useLocation();
-  const state = location.state as { paymentData: UpdatedPayment };
-  const paymentData = state.paymentData;
+  const state = location.state as { paymentData?: UpdatedPayment } | null;
+  const paymentData = state?.paymentData;
   if (!paymentData) return <ErrorPage errorMessage={"결제 정보가 없습니다"} />;
 
   return (
