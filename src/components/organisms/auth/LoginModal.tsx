@@ -6,8 +6,8 @@ import { sendLoginRequest } from "../../../api/authentication/authApi";
 import { useAuth } from "../../../hooks/useAuth";
 import { loginErrorMessages } from "../../../constants/errorMessages";
 import { toast } from "react-toastify";
-import { AxiosError } from "axios";
 import { ApiErrorResponse } from "../../../types/api/common";
+import { HttpError } from "../../../api/http";
 import Modal from "../../molecules/modal/Modal";
 import LabeledInput from "../../molecules/labeledinput/LabeledInput";
 import Button from "../../atoms/buttons/Button";
@@ -36,7 +36,7 @@ const LoginModal: React.FC<LoginModalProps> = ({
 
   const mutation = useMutation<
     LoginResponse,
-    AxiosError<ApiErrorResponse>,
+    HttpError<ApiErrorResponse>,
     LoginData
   >({
     mutationFn: sendLoginRequest,
@@ -49,7 +49,7 @@ const LoginModal: React.FC<LoginModalProps> = ({
         toast.success("로그인되었습니다.");
       }
     },
-    onError: (error: AxiosError<ApiErrorResponse>) => {
+    onError: (error: HttpError<ApiErrorResponse>) => {
       if (error.response) {
         const code = error.response.data.code;
         if (code === 5) {

@@ -1,10 +1,10 @@
-import axios from "axios";
 import {
   NewPayment,
   UpdatedPaymentResponse,
   UpdatePayment,
 } from "../../types/api/payment";
 import { baseURL } from "../../constants/api";
+import { apiRequest } from "../http";
 
 const API_URL = baseURL + "payments/";
 
@@ -16,28 +16,18 @@ const createNewPayment = async ({
   eventDateId,
   seatIds,
 }: NewPayment): Promise<UpdatedPaymentResponse> => {
-  const token = localStorage.getItem("authToken");
-
-  if (!token) {
-    throw new Error("인증 토큰이 없습니다.");
-  }
-
-  const response = await axios.post<UpdatedPaymentResponse>(
-    API_URL,
-    {
+  return apiRequest<UpdatedPaymentResponse>(API_URL, {
+    auth: "required",
+    authMessage: "인증 토큰이 없습니다.",
+    body: {
       orderId,
       paymentMethod,
       totalAmount,
       eventDateId,
       seatIds,
     },
-    {
-      headers: {
-        Authorization: `Bearer ${token}`,
-      },
-    }
-  );
-  return response.data;
+    method: "POST",
+  });
 };
 
 // 결제 업데이트 요청
@@ -47,25 +37,15 @@ const updatePayment = async ({
   newPaymentStatus,
 }: UpdatePayment): Promise<UpdatedPaymentResponse> => {
   try {
-    const token = localStorage.getItem("authToken");
-    if (!token) {
-      throw new Error("인증 토큰이 없습니다. 로그인해주세요.");
-    }
-
-    const response = await axios.patch<UpdatedPaymentResponse>(
-      API_URL,
-      {
+    return await apiRequest<UpdatedPaymentResponse>(API_URL, {
+      auth: "required",
+      body: {
         orderId, // 주문 ID 추가
         paymentId,
         newPaymentStatus,
       },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`, // 인증 헤더 추가!!
-        },
-      }
-    );
-    return response.data;
+      method: "PATCH",
+    });
   } catch (error) {
     console.error("결제 상태 업데이트 실패:", error);
     throw error;

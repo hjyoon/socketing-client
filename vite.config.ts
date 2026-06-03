@@ -17,6 +17,7 @@ export default defineConfig({
       provider: "istanbul",
       reporter: ["text"],
       include: [
+        "src/api/http.ts",
         "src/store/reservationSeatUpdates.ts",
         "src/utils/svg-wrapper/areaElement.ts",
         "src/utils/svgGeometry.ts",

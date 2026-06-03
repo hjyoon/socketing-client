@@ -13,8 +13,8 @@ import {
 import { useAuth } from "../../../hooks/useAuth";
 import { registerErrorMessages } from "../../../constants/errorMessages";
 import { toast } from "react-toastify";
-import { AxiosError } from "axios";
 import { ApiErrorResponse } from "../../../types/api/common";
+import { HttpError } from "../../../api/http";
 import Modal from "../../molecules/modal/Modal";
 import LabeledInput from "../../molecules/labeledinput/LabeledInput";
 import Button from "../../atoms/buttons/Button";
@@ -44,7 +44,7 @@ const JoinModal: React.FC<JoinModalProps> = ({
 
   const mutation = useMutation<
     RegisterResponse,
-    AxiosError<ApiErrorResponse>,
+    HttpError<ApiErrorResponse>,
     LoginData
   >({
     mutationFn: sendRegisterRequest,
@@ -68,7 +68,7 @@ const JoinModal: React.FC<JoinModalProps> = ({
       }
       onClose();
     },
-    onError: (error: AxiosError<ApiErrorResponse>) => {
+    onError: (error: HttpError<ApiErrorResponse>) => {
       if (error.response) {
         const code = error.response.data.code;
         if (code === 1) {

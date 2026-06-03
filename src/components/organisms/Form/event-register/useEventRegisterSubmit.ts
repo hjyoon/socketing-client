@@ -1,11 +1,11 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { AxiosError } from "axios";
 import { useNavigate } from "react-router";
 import { toast } from "react-toastify";
 import {
   createNewArea,
   createNewEvent,
 } from "../../../../api/events/eventsApi";
+import { HttpError } from "../../../../api/http";
 import {
   postEventErrorMessages,
   postSeatErrorMessages,
@@ -38,7 +38,7 @@ export const useEventRegisterSubmit = () => {
 
   const createAreaMutation = usePostMutation<
     NewAreasResponse,
-    AxiosError<ApiErrorResponse>,
+    HttpError<ApiErrorResponse>,
     CreateAreaRequest
   >(createNewArea, {
     onSuccess: () => {
@@ -51,7 +51,7 @@ export const useEventRegisterSubmit = () => {
 
   const createEventMutation = usePostMutation<
     NewEventResponse,
-    AxiosError<ApiErrorResponse>,
+    HttpError<ApiErrorResponse>,
     NewEvent
   >(createNewEvent, {
     onSuccess: async (response) => {

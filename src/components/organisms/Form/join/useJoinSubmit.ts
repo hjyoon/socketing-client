@@ -1,5 +1,4 @@
 import { useMutation } from "@tanstack/react-query";
-import { AxiosError } from "axios";
 import { UseFormSetError, UseFormWatch } from "react-hook-form";
 import { useNavigate } from "react-router";
 import { toast } from "react-toastify";
@@ -7,6 +6,7 @@ import {
   sendLoginRequest,
   sendRegisterRequest,
 } from "../../../../api/authentication/authApi";
+import { HttpError } from "../../../../api/http";
 import { registerErrorMessages } from "../../../../constants/errorMessages";
 import { useAuth } from "../../../../hooks/useAuth";
 import { ApiErrorResponse } from "../../../../types/api/common";
@@ -25,7 +25,7 @@ export const useJoinSubmit = (
   const navigate = useNavigate();
   const mutation = useMutation<
     RegisterResponse,
-    AxiosError<ApiErrorResponse>,
+    HttpError<ApiErrorResponse>,
     LoginData
   >({
     mutationFn: sendRegisterRequest,
@@ -54,7 +54,7 @@ export const useJoinSubmit = (
 };
 
 const handleRegisterError = (
-  error: AxiosError<ApiErrorResponse>,
+  error: HttpError<ApiErrorResponse>,
   setError: UseFormSetError<JoinConfirmData>
 ) => {
   const code = error.response?.data.code;

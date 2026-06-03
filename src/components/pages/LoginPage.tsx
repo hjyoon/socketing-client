@@ -1,8 +1,8 @@
 import MainLayout from "../layout/MainLayout";
 import LoginForm from "../organisms/Form/LoginForm";
 import LoginTemplate from "../templates/login/LoginTemplate";
-import { AxiosError } from "axios";
 import { ApiErrorResponse } from "../../types/api/common";
+import { HttpError } from "../../api/http";
 import { LoginData, LoginResponse } from "../../types/api/user";
 import { useMutation } from "@tanstack/react-query";
 import { sendLoginRequest } from "../../api/authentication/authApi";
@@ -23,7 +23,7 @@ const LoginPage = () => {
 
   const mutation = useMutation<
     LoginResponse,
-    AxiosError<ApiErrorResponse>,
+    HttpError<ApiErrorResponse>,
     LoginData
   >({
     mutationFn: sendLoginRequest,
@@ -35,7 +35,7 @@ const LoginPage = () => {
       }
     },
 
-    onError: (error: AxiosError<ApiErrorResponse>) => {
+    onError: (error: HttpError<ApiErrorResponse>) => {
       if (error.response) {
         const code = error.response.data.code;
         if (code === 5) {

@@ -1,4 +1,3 @@
-import axios from "axios";
 import { baseURL } from "../../constants/api";
 import {
   EventsResponse,
@@ -10,23 +9,18 @@ import {
   CreateAreaRequest,
 } from "../../types/api/event";
 import { OrderSeatResponse } from "../../types/api/order";
+import { apiRequest } from "../http";
 
 const API_URL = baseURL + "events/";
 
-const api = axios.create({
-  baseURL: API_URL,
-});
-
 const fetchAllEvents = async (): Promise<EventsResponse> => {
-  const response = await api.get<EventsResponse>(API_URL);
-  return response.data;
+  return apiRequest<EventsResponse>(API_URL, { auth: true });
 };
 
 const fetchOneEvent = async (
   event_id: string
 ): Promise<SingleEventResponse> => {
-  const response = await api.get<SingleEventResponse>(API_URL + event_id);
-  return response.data;
+  return apiRequest<SingleEventResponse>(API_URL + event_id, { auth: true });
 };
 
 const createNewEvent = async ({
@@ -39,59 +33,45 @@ const createNewEvent = async ({
   svg,
   ticketingStartTime,
 }: NewEvent): Promise<NewEventResponse> => {
-  const response = await api.post<NewEventResponse>(API_URL, {
-    title,
-    thumbnail,
-    place,
-    cast,
-    ageLimit,
-    eventDates,
-    svg,
-    ticketingStartTime,
+  return apiRequest<NewEventResponse>(API_URL, {
+    auth: true,
+    body: {
+      title,
+      thumbnail,
+      place,
+      cast,
+      ageLimit,
+      eventDates,
+      svg,
+      ticketingStartTime,
+    },
+    method: "POST",
   });
-  return response.data;
 };
 
 const deleteEvent = async (event_id: string): Promise<EventDeleteResponse> => {
-  const response = await api.delete<EventDeleteResponse>(`${event_id}`);
-  return response.data;
+  return apiRequest<EventDeleteResponse>(API_URL + event_id, {
+    auth: true,
+    method: "DELETE",
+  });
 };
 
 const createNewArea = async ({
   event_id,
   areas,
 }: CreateAreaRequest): Promise<NewAreasResponse> => {
-  const response = await api.post<NewAreasResponse>(
-    API_URL + event_id + "/seats" + "/batch",
-    {
-      areas,
-    }
-  );
-  return response.data;
+  return apiRequest<NewAreasResponse>(API_URL + event_id + "/seats/batch", {
+    auth: true,
+    body: { areas },
+    method: "POST",
+  });
 };
 
 const fetchAllSeats = async (event_id: string): Promise<OrderSeatResponse> => {
-  const response = await api.get<OrderSeatResponse>(
-    API_URL + event_id + "/seats"
-  );
-  return response.data;
+  return apiRequest<OrderSeatResponse>(API_URL + event_id + "/seats", {
+    auth: true,
+  });
 };
-
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("authToken");
-    if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error: unknown) => {
-    if (error instanceof Error) {
-      return Promise.reject(error);
-    }
-    return Promise.reject(new Error(String(error)));
-  }
-);
 
 export {
   fetchAllEvents,

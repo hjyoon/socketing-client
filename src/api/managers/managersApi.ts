@@ -1,45 +1,25 @@
-import axios from "axios";
 import {
   AllEventManagementResponse,
   EventManagementResponse,
 } from "../../types/api/managers";
 import { baseURL } from "../../constants/api";
+import { apiRequest } from "../http";
 
 const API_URL = baseURL + "managers/events/";
 
-const api = axios.create({
-  baseURL: API_URL,
-});
 const fetchOneEventForManager = async (
   eventId: string,
   eventDateId: string
 ): Promise<EventManagementResponse> => {
-  const response = await api.get<EventManagementResponse>(
-    `${API_URL}${eventId}/reservation-status?eventDateId=${eventDateId}`
+  return apiRequest<EventManagementResponse>(
+    `${API_URL}${eventId}/reservation-status`,
+    { auth: true, params: { eventDateId } }
   );
-  return response.data;
 };
 
 const fetchAllEventForManager =
   async (): Promise<AllEventManagementResponse> => {
-    const response = await api.get<AllEventManagementResponse>(API_URL);
-    return response.data;
+    return apiRequest<AllEventManagementResponse>(API_URL, { auth: true });
   };
-
-api.interceptors.request.use(
-  (config) => {
-    const token = localStorage.getItem("authToken");
-    if (token && config.headers) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    return config;
-  },
-  (error: unknown) => {
-    if (error instanceof Error) {
-      return Promise.reject(error);
-    }
-    return Promise.reject(new Error(String(error)));
-  }
-);
 
 export { fetchOneEventForManager, fetchAllEventForManager };

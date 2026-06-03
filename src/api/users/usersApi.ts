@@ -1,27 +1,20 @@
-import axios from "axios";
 import { UserPointResponse, UserResponse } from "../../types/api/user";
 import { baseURL } from "../../constants/api";
+import { apiRequest } from "../http";
 
 const API_URL = baseURL + "users/";
 
 const getUserInfo = async (user_id: string): Promise<UserResponse> => {
-  const response = await axios.get<UserResponse>(API_URL + user_id);
-  return response.data;
+  return apiRequest<UserResponse>(API_URL + user_id);
 };
 
 const getUserInfoByEmail = async (email: string): Promise<UserResponse> => {
   const modifiedEmail = email + "@jungle.com";
-  const response = await axios.get<UserResponse>(
-    API_URL + "email/" + modifiedEmail
-  );
-  return response.data;
+  return apiRequest<UserResponse>(API_URL + "email/" + modifiedEmail);
 };
 
 const getUserPoints = async (user_id: string): Promise<UserPointResponse> => {
-  const response = await axios.get<UserPointResponse>(
-    API_URL + user_id + "/points"
-  );
-  return response.data;
+  return apiRequest<UserPointResponse>(API_URL + user_id + "/points");
 };
 
 const updateUserNickname = async (
@@ -29,20 +22,11 @@ const updateUserNickname = async (
   newNickname: string
 ): Promise<UserResponse> => {
   try {
-    const token = localStorage.getItem("authToken");
-    if (!token) {
-      throw new Error("인증 토큰이 없습니다. 로그인해주세요.");
-    }
-    const response = await axios.patch<UserResponse>(
-      API_URL + user_id + "/nickname",
-      { nickname: newNickname },
-      {
-        headers: {
-          Authorization: `Bearer ${token}`, // 인증 헤더 추가!!
-        },
-      }
-    );
-    return response.data; // 업데이트 한 사용자 정보 반환
+    return await apiRequest<UserResponse>(API_URL + user_id + "/nickname", {
+      auth: "required",
+      body: { nickname: newNickname },
+      method: "PATCH",
+    });
   } catch (error) {
     console.error("Failed to update nickname:", error);
     throw error;
